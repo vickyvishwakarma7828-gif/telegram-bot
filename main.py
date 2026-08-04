@@ -11,7 +11,7 @@ bot = telebot.TeleBot(TOKEN)
 user_last_spin = {}
 
 APP_PRICES = {
-    # 💥 VALA MOD PACKAGES
+    # 💥 VALA MOD PACKAGES (ADDED IN NON-ROOT)
     "vala_mod": {
         "name": "VALA MOD APK", 
         "1 Hour": 45, 
@@ -119,7 +119,6 @@ def callback_listener(call):
     elif data == "btn_store":
         text = "🛒 *SELECT PRODUCT PANEL*\n\n✅ Choose a panel to view its packages:"
         markup = InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("🔥 VALA MOD PANEL", callback_data="pnl_valamod"))
         markup.add(InlineKeyboardButton("🤖 ANDROID NON ROOT PANEL", callback_data="pnl_nonroot"))
         markup.add(InlineKeyboardButton("🤖 ANDROID ROOT PANEL", callback_data="pnl_root"))
         markup.add(InlineKeyboardButton("🍎 IPHONE PANEL", callback_data="pnl_iphone"))
@@ -216,16 +215,11 @@ def callback_listener(call):
         bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=spin_text, parse_mode='Markdown', reply_markup=spin_markup)
 
     # 10. Panels
-    elif data == "pnl_valamod":
-        text = "🔥 *VALA MOD PANEL*\n\n✅ Choose app to buy:"
-        markup = InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("💥 VALA MOD APK", callback_data="app_vala_mod"))
-        markup.add(InlineKeyboardButton("🔙 BACK TO PANELS", callback_data="btn_store"))
-        bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=text, parse_mode='Markdown', reply_markup=markup)
-
     elif data == "pnl_nonroot":
         text = "🛒 *ANDROID NON ROOT PANELS*\n\n✅ Choose an app:"
         markup = InlineKeyboardMarkup()
+        # 💥 VALA MOD ADDED AT THE TOP OF NON ROOT
+        markup.add(InlineKeyboardButton("💥 VALA MOD APK", callback_data="app_vala_mod"))
         markup.add(InlineKeyboardButton("📱 Drip Client Apk", callback_data="app_drip"))
         markup.add(InlineKeyboardButton("📱 Drip Client Proxy Apk", callback_data="app_drip_proxy"))
         markup.add(InlineKeyboardButton("📱 Prime Hook Apk", callback_data="app_prime"))
@@ -310,9 +304,7 @@ def callback_listener(call):
                     markup.add(InlineKeyboardButton(f"❌ {val_text} (Out of Stock)", callback_data=f"oos_{app_code}_{duration}"))
 
         back_btn = "btn_store"
-        if app_code == "vala_mod":
-            back_btn = "pnl_valamod"
-        elif app_code in ["drip", "drip_proxy", "prime", "hg_proxy", "patorange", "patblue", "brmods_nr", "reaper_nr", "silent_nr"]:
+        if app_code in ["vala_mod", "drip", "drip_proxy", "prime", "hg_proxy", "patorange", "patblue", "brmods_nr", "reaper_nr", "silent_nr"]:
             back_btn = "pnl_nonroot"
         elif app_code in ["brmods_root", "reaper_root", "drip_root", "hg_root", "stricks", "xyz", "hikari", "lk", "safe", "brutal", "xreg", "rapid", "haxx", "zytron", "angry", "scorpio_lite", "scorpio_brutal"]:
             back_btn = "pnl_root"
@@ -356,4 +348,5 @@ def callback_listener(call):
 
 print("Bot सफलतापूर्वक चालू हो गया है...")
 bot.polling(none_stop=True)
+
 
