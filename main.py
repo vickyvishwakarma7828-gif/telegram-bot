@@ -11,6 +11,17 @@ bot = telebot.TeleBot(TOKEN)
 user_last_spin = {}
 
 APP_PRICES = {
+    # 💥 VALA MOD PACKAGES
+    "vala_mod": {
+        "name": "VALA MOD APK", 
+        "1 Hour": 45, 
+        "3 Hours": 100, 
+        "6 Hours": 150, 
+        "12 Hours": 250, 
+        "24 Hours": 400
+    },
+    
+    # EXISTING PACKAGES
     "drip": {"name": "Drip Client Apk", 1: 80, 3: 160, 7: 270, 15: 420, 30: 620},
     "drip_proxy": {"name": "Drip Client Proxy Apk", 1: 80, 3: 160, 7: 270, 30: 620},
     "prime": {"name": "Prime Hook Apk", 1: 95, 3: 160, 7: 315},
@@ -108,6 +119,7 @@ def callback_listener(call):
     elif data == "btn_store":
         text = "🛒 *SELECT PRODUCT PANEL*\n\n✅ Choose a panel to view its packages:"
         markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("🔥 VALA MOD PANEL", callback_data="pnl_valamod"))
         markup.add(InlineKeyboardButton("🤖 ANDROID NON ROOT PANEL", callback_data="pnl_nonroot"))
         markup.add(InlineKeyboardButton("🤖 ANDROID ROOT PANEL", callback_data="pnl_root"))
         markup.add(InlineKeyboardButton("🍎 IPHONE PANEL", callback_data="pnl_iphone"))
@@ -153,7 +165,7 @@ def callback_listener(call):
         else:
             history_text = "🔑 *YOUR PURCHASE HISTORY*\n\n"
             for idx, item in enumerate(user_history, 1):
-                history_text += f"{idx}. 📦 {item['app']} ({item['days']} Days) - ₹{item['price']}\n   🕒 {item['time']}\n\n"
+                history_text += f"{idx}. 📦 {item['app']} ({item['duration']}) - ₹{item['price']}\n   🕒 {item['time']}\n\n"
         bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=history_text, parse_mode='Markdown', reply_markup=back_markup)
 
     # 6. Download
@@ -204,6 +216,13 @@ def callback_listener(call):
         bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=spin_text, parse_mode='Markdown', reply_markup=spin_markup)
 
     # 10. Panels
+    elif data == "pnl_valamod":
+        text = "🔥 *VALA MOD PANEL*\n\n✅ Choose app to buy:"
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("💥 VALA MOD APK", callback_data="app_vala_mod"))
+        markup.add(InlineKeyboardButton("🔙 BACK TO PANELS", callback_data="btn_store"))
+        bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=text, parse_mode='Markdown', reply_markup=markup)
+
     elif data == "pnl_nonroot":
         text = "🛒 *ANDROID NON ROOT PANELS*\n\n✅ Choose an app:"
         markup = InlineKeyboardMarkup()
@@ -261,7 +280,7 @@ def callback_listener(call):
         markup.add(InlineKeyboardButton("🔙 BACK TO PANELS", callback_data="btn_store"))
         bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=text, parse_mode='Markdown', reply_markup=markup)
 
-    # 11. Apps Details (हर ऐप के लिए यूनिक बटन)
+    # 11. Apps Details
     elif data.startswith("app_"):
         app_code = data.replace("app_", "")
         filename = f"{app_code}_keys.txt"
@@ -273,23 +292,27 @@ def callback_listener(call):
         app_title = app_data["name"]
 
         text = f"🛒 *PANEL - {app_title.upper()} PACKAGES*\n━━━━━━━━━━━━━━━━━━\n\n"
-        for days, price in app_data.items():
-            if days != "name":
+        for duration, price in app_data.items():
+            if duration != "name":
                 usd_price = round(price / 90.0, 2)
-                text += f"🛒 ⏱️ **Validity: {days}**\n💰 Price: ₹{price}.00 (~ ${usd_price})\n📱 Limit: 1 Device | {stock_status}\n\n"
+                val_text = f"{duration} Days" if isinstance(duration, int) else f"{duration}"
+                text += f"🛒 ⏱️ **Validity: {val_text}**\n💰 Price: ₹{price}.00 (~ ${usd_price})\n📱 Limit: 1 Device | {stock_status}\n\n"
         text += "✅ *Select package below to instantly purchase:*"
 
         markup = InlineKeyboardMarkup()
-        for days, price in app_data.items():
-            if days != "name":
+        for duration, price in app_data.items():
+            if duration != "name":
                 usd_price = round(price / 90.0, 2)
+                val_text = f"{duration} Days" if isinstance(duration, int) else f"{duration}"
                 if stock > 0:
-                    markup.add(InlineKeyboardButton(f"🛒 Buy {days} Days - ₹{price}.00 (~ ${usd_price})", callback_data=f"buy_{app_code}_{days}"))
+                    markup.add(InlineKeyboardButton(f"🛒 Buy {val_text} - ₹{price}.00 (~ ${usd_price})", callback_data=f"buy_{app_code}_{duration}"))
                 else:
-                    markup.add(InlineKeyboardButton(f"❌ {days} Days (Out of Stock)", callback_data=f"oos_{app_code}_{days}"))
+                    markup.add(InlineKeyboardButton(f"❌ {val_text} (Out of Stock)", callback_data=f"oos_{app_code}_{duration}"))
 
         back_btn = "btn_store"
-        if app_code in ["drip", "drip_proxy", "prime", "hg_proxy", "patorange", "patblue", "brmods_nr", "reaper_nr", "silent_nr"]:
+        if app_code == "vala_mod":
+            back_btn = "pnl_valamod"
+        elif app_code in ["drip", "drip_proxy", "prime", "hg_proxy", "patorange", "patblue", "brmods_nr", "reaper_nr", "silent_nr"]:
             back_btn = "pnl_nonroot"
         elif app_code in ["brmods_root", "reaper_root", "drip_root", "hg_root", "stricks", "xyz", "hikari", "lk", "safe", "brutal", "xreg", "rapid", "haxx", "zytron", "angry", "scorpio_lite", "scorpio_brutal"]:
             back_btn = "pnl_root"
@@ -301,10 +324,10 @@ def callback_listener(call):
         markup.add(InlineKeyboardButton("🔙 BACK TO PANELS", callback_data=back_btn))
         bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=text, parse_mode='Markdown', reply_markup=markup)
 
-    # 12. Individual Buy Click (सिंगल सेलेक्ट के लिए फिक्स)
+    # 12. Individual Buy Click
     elif data.startswith("buy_"):
         parts = data.split("_")
-        days_selected = parts[-1]
+        duration_selected = parts[-1]
         app_code_selected = "_".join(parts[1:-1])
         
         if user_id not in user_purchase_history:
@@ -315,15 +338,15 @@ def callback_listener(call):
         
         user_purchase_history[user_id].append({
             "app": app_real_name,
-            "days": days_selected,
+            "duration": duration_selected,
             "price": "देखें",
             "time": purchase_time
         })
 
-        bot.answer_callback_query(call.id, f"आपने {days_selected} दिन वाला पैक चुना है!", show_alert=True)
+        bot.answer_callback_query(call.id, f"आपने {duration_selected} वाला पैक चुना है!", show_alert=True)
         bot.send_message(
             chat_id=chat_id, 
-            text=f"🛒 आपने **{app_real_name}** का **{days_selected}** दिन वाला पैक सेलेक्ट किया है।\n\n💰 बैलेंस एड करने या खरीदने के लिए एडमिन से संपर्क करें 👉 @Vickyseller0",
+            text=f"🛒 आपने **{app_real_name}** का **{duration_selected}** वाला पैक सेलेक्ट किया है।\n\n💰 बैलेंस एड करने या खरीदने के लिए एडमिन से संपर्क करें 👉 @Vickyseller0",
             parse_mode='Markdown'
         )
 
@@ -333,3 +356,4 @@ def callback_listener(call):
 
 print("Bot सफलतापूर्वक चालू हो गया है...")
 bot.polling(none_stop=True)
+
