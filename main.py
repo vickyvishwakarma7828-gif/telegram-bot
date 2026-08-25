@@ -363,6 +363,7 @@ def callback_listener(call):
     elif data == "btn_dospin":
         current_time = time.time()
         cooldown_period = 86400
+
         if user_id in user_last_spin:
             elapsed_time = current_time - user_last_spin[user_id]
             if elapsed_time < cooldown_period:
@@ -370,11 +371,46 @@ def callback_listener(call):
                 return
 
         user_last_spin[user_id] = current_time
-        win_amount = random.choice([0.10, 0.30, 0.60, 1.00, 2.00])
-        spin_text = f"🎉 बधाई हो! आपने Ludo Spin में **₹{win_amount}** जीत लिया है!\n\nइसे क्लेम करने के लिए स्क्रीनशॉट भेजें 👉 @{clean_admin}"
+
+        # Pura message delete karke Telegram dice send karein
+        bot.delete_message(chat_id=chat_id, message_id=message_id)
+        dice_msg = bot.send_dice(chat_id=chat_id, emoji='🎲')
+        dice_value = dice_msg.dice.value
+
+        # Har dice number ka winning reward amount
+        rewards = {1: 0.10, 2: 0.20, 3: 0.30, 4: 0.40, 5: 0.50, 6: 1.00}
+        won_amount = rewards.get(dice_value, 0.10)
+
+        # Balance update karna
+        current_bal = user_balances.get(user_id, 0.24)
+        new_balance = current_bal + won_amount
+        user_balances[user_id] = new_balance
+
+        # Dice roll animation ke liye 3 second wait
+        time.sleep(3)
+
+        # Output Text (Aapke screenshot format ke anusar)
+        usd_won = won_amount / 90.0
+        usd_total = new_balance / 90.0
+
+        spin_text = (
+            f"🎁 *LUCKY DICE RESULT* 🔨💯\n\n"
+            f"🎲 **Dice Value:** {dice_value}\n\n"
+            f"💸 **You Won:** ₹{won_amount:.2f} (~ ${usd_won:.2f})\n"
+            f"💰 **Total Balance:** ₹{new_balance:.2f} (~ ${usd_total:.2f})\n\n"
+            f"Congratulations! Come back after 24 hours."
+        )
+
         spin_markup = InlineKeyboardMarkup()
-        spin_markup.add(InlineKeyboardButton("🔙 BACK", callback_data="btn_back"))
-        bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=spin_text, parse_mode="Markdown", reply_markup=spin_markup)
+        spin_markup.add(InlineKeyboardButton("📚 BACK TO MENU", callback_data="btn_back"))
+
+        bot.send_message(
+            chat_id=chat_id,
+            text=spin_text,
+            parse_mode="Markdown",
+            reply_to_message_id=dice_msg.message_id,
+            reply_markup=spin_markup
+        )
 
     elif data == "pnl_nonroot":
         text = "🛒 *ANDROID NON ROOT PANELS*\n\n✅ Choose an app:"
@@ -505,6 +541,3 @@ def callback_listener(call):
 
 print("Bot fixed and running perfectly...")
 bot.polling(none_stop=True)
-
-
-
