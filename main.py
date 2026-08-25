@@ -28,11 +28,11 @@ def save_json_data(file_path, data):
     with open(file_path, "w") as f:
         json.dump(data, f)
 
-# Memory Stores
+# Memory Stores - Convert lists to set of strings to prevent data type mismatch
 user_last_spin = load_json_data(SPIN_FILE, dict)
-all_users = set(load_json_data(ALL_USERS_FILE, list))
-buyer_users = set(load_json_data(BUYERS_FILE, list))
-verified_users = set(load_json_data(VERIFIED_USERS_FILE, list))
+all_users = set(map(str, load_json_data(ALL_USERS_FILE, list)))
+buyer_users = set(map(str, load_json_data(BUYERS_FILE, list)))
+verified_users = set(map(str, load_json_data(VERIFIED_USERS_FILE, list)))
 
 user_amount_input = {}
 user_balances = {}
@@ -145,7 +145,7 @@ def broadcast_all(message):
 
     for u_id in list(all_users):
         try:
-            bot.send_message(u_id, f"📢 *ANNOUNCEMENT*\n\n{msg_text}", parse_mode="Markdown")
+            bot.send_message(int(u_id), f"📢 *ANNOUNCEMENT*\n\n{msg_text}", parse_mode="Markdown")
             sent_count += 1
             time.sleep(0.05)
         except:
@@ -170,7 +170,7 @@ def broadcast_buyers(message):
 
     for u_id in list(buyer_users):
         try:
-            bot.send_message(u_id, f"🌟 *EXCLUSIVE BUYER UPDATE*\n\n{msg_text}", parse_mode="Markdown")
+            bot.send_message(int(u_id), f"🌟 *EXCLUSIVE BUYER UPDATE*\n\n{msg_text}", parse_mode="Markdown")
             sent_count += 1
             time.sleep(0.05)
         except:
@@ -178,10 +178,10 @@ def broadcast_buyers(message):
 
     bot.send_message(message.chat.id, f"✅ *Buyer Broadcast Finished!*\n\n🟢 Sent: {sent_count}\n🔴 Failed/Blocked: {failed_count}", parse_mode="Markdown")
 
-# --- START COMMAND WITH VERIFICATION ---
+# --- START COMMAND WITH PERMANENT SINGLE-TIME VERIFICATION ---
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    user_id = message.chat.id
+    user_id = str(message.chat.id)
     user_name = message.from_user.first_name
     
     # Save user ID to ALL_USERS database
@@ -189,7 +189,7 @@ def send_welcome(message):
         all_users.add(user_id)
         save_json_data(ALL_USERS_FILE, list(all_users))
 
-    # Verification status check
+    # Check verification status strictly as String
     if user_id not in verified_users:
         markup = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True, one_time_keyboard=True)
         btn_contact = KeyboardButton("📱 Share Contact to Verify", request_contact=True)
@@ -211,10 +211,10 @@ def send_welcome(message):
     else:
         show_main_menu(message.chat.id)
 
-# Handler to receive contact
+# Handler to receive contact and permanently save verification
 @bot.message_handler(content_types=['contact'])
 def handle_contact(message):
-    user_id = message.from_user.id
+    user_id = str(message.from_user.id)
     if message.contact is not None:
         verified_users.add(user_id)
         save_json_data(VERIFIED_USERS_FILE, list(verified_users))
@@ -222,7 +222,7 @@ def handle_contact(message):
         remove_markup = ReplyKeyboardRemove()
         bot.send_message(
             message.chat.id, 
-            "👤 **Thank you! Your contact has been verified.**", 
+            "✅ **Thank you! Your contact has been verified successfully.**", 
             reply_markup=remove_markup, 
             parse_mode='Markdown'
         )
@@ -230,7 +230,7 @@ def handle_contact(message):
         show_main_menu(message.chat.id)
 
 def show_main_menu(chat_id):
-    text = """✨ *WELCOME TO THE STORE*
+    text = """🏪  —  𝗩𝗜𝗖𝗞𝗬 𝗫 𝗠𝗢𝗗𝗘 𝗦𝗧𝗢𝗥  —  🏪
 
 🛒 Product Store : all key purchase & instantly delivery
 👤 My Profile : check your account information
@@ -411,7 +411,7 @@ def callback_listener(call):
 
     elif data == "btn_paytm_upi":
         bal = user_balances.get(user_id, 0.24)
-        text = f"💸 *Add Balance (Paytm UPI)*\n\nCurrent balance: ₹{bal:.2f}\n\nPick a quick amount below, or enter a custom amount.\nMin: ₹50.00 · Max: ₹2,000.00"
+        text = f"💸 *Add Balance (Paytm UPI)*\n\nCurrent balance: ₹{bal:.2f}\n\nPick a quick amount below, or enter a custom amount.\nMin: ₹00.00 · Max: ₹2,000.00"
         markup = InlineKeyboardMarkup()
         markup.row(InlineKeyboardButton("₹100", callback_data="pay_quick_100"), InlineKeyboardButton("₹500", callback_data="pay_quick_500"))
         markup.row(InlineKeyboardButton("₹1000", callback_data="pay_quick_1000"), InlineKeyboardButton("₹2000", callback_data="pay_quick_2000"))
@@ -452,7 +452,7 @@ def callback_listener(call):
 
     elif data == "btn_custom_amount":
         user_amount_input[user_id] = "0"
-        text = "💰 *Enter Amount*\n\n₹0\n\nMin: ₹50.00 · Max: ₹2,000.00"
+        text = "💰 *Enter Amount*\n\n₹0\n\nMin: ₹00.00 · Max: ₹2,000.00"
         bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=text, parse_mode="Markdown", reply_markup=create_keypad_markup("0"))
 
     elif data.startswith("num_"):
@@ -468,7 +468,7 @@ def callback_listener(call):
                 val = "0"
 
         user_amount_input[user_id] = val
-        text = f"💰 *Enter Amount*\n\n₹{val}\n\nMin: ₹50.00 · Max: ₹2,000.00"
+        text = f"💰 *Enter Amount*\n\n₹{val}\n\nMin: ₹00.00 · Max: ₹2,000.00"
         bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=text, parse_mode="Markdown", reply_markup=create_keypad_markup(val))
 
     elif data == "confirm_custom_pay" or data.startswith("pay_quick_"):
@@ -667,9 +667,9 @@ def callback_listener(call):
         duration_selected = parts[-1]
         app_code_selected = "_".join(parts[1:-1])
 
-        # Automatically save user ID to BUYERS database
-        if user_id not in buyer_users:
-            buyer_users.add(user_id)
+        # Save user ID to BUYERS database as String
+        if str_user_id not in buyer_users:
+            buyer_users.add(str_user_id)
             save_json_data(BUYERS_FILE, list(buyer_users))
 
         if user_id not in user_purchase_history:
