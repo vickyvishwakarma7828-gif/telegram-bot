@@ -6,7 +6,7 @@ from datetime import datetime
 import telebot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 
-TOKEN = "8849298752:AAFKpZRS8gtzYBvm81OSx8jLB6uN9IV93Kw"
+TOKEN = "8849298752:AAFn2cJXRmUNgMeUP5waepo86RTJZfAMe80"
 bot = telebot.TeleBot(TOKEN)
 
 # PERMANENT DATA STORES
