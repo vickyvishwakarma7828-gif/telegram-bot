@@ -31,7 +31,7 @@ APP_PRICES = {
     "hg_proxy": {"name": "Hg Proxy Apk", 1: 100, 7: 240, 10: 310, 30: 605},
     "patorange": {"name": "Patoteam Orange", 3: 230, 7: 370, 15: 605, 30: 960},
     "patblue": {"name": "Patoteam Blue", 3: 265, 7: 440, 15: 640, 30: 1020},
-    "Abcdnon_nr": {"name": "ABCD PANEL NON ROOT", "12 Hours": 49, 1: 90, 3: 150, 7: 250},
+    "Abcdnon_nr": {"name": "ABCD PANEL NON ROOT", "12 Hours": 49, "1 Day": 90, "3 Day": 150, "7 Day": 200},
     "Aimhack_nr": {"name": "AIMHACK APK", "1 Hour": 35, "3 Hours": 70, "6 Hours": 110, "12 Hours": 180},
     "silent_nr": {"name": "Silent Cheats Apkmod", 1: 110, 3: 200, 7: 370, 14: 620, 28: 920},
     "brmods_root": {"name": "Br Mods Apk", 1: 79, 7: 260, 15: 440, 30: 620},
@@ -434,7 +434,7 @@ def callback_listener(call):
         markup.add(InlineKeyboardButton("📱 HG Proxy Apk", callback_data="app_hg_proxy"))
         markup.add(InlineKeyboardButton("📱 Patoteam Orange", callback_data="app_patorange"))
         markup.add(InlineKeyboardButton("📱 Patoteam Blue", callback_data="app_patblue"))
-        markup.add(InlineKeyboardButton("📱 ABCD PANEL NON ROOT ", callback_data="app_brmods_nr"))
+        markup.add(InlineKeyboardButton("📱 ABCD PANEL NON ROOT ", callback_data="app_Abcd_nr"))
         markup.add(InlineKeyboardButton("📱 AIMHACK APK", callback_data="app_Aimhack_nr"))
         markup.add(InlineKeyboardButton("📱 Silent Cheats Apkmod", callback_data="app_silent_nr"))
         markup.add(InlineKeyboardButton("🔙 BACK TO PANELS", callback_data="btn_store"))
