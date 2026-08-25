@@ -600,4 +600,15 @@ def callback_listener(call):
         })
 
         bot.answer_callback_query(call.id, f"आपने {duration_selected} वाला पैक चुना है!", show_alert=True)
- 
+        bot.send_message(
+            chat_id=chat_id,
+            text=f"🛒 आपने **{app_real_name}** का **{duration_selected}** वाला पैक सेलेक्ट किया है।\n\n💰 बैलेंस एड करने या खरीदने के लिए एडमिन से संपर्क करें 👉 @{clean_admin}",
+            parse_mode="Markdown"
+        )
+
+    elif data.startswith("oos_"):
+        bot.answer_callback_query(call.id, "⚠️ यह पैकेज अभी स्टॉक में उपलब्ध नहीं है!", show_alert=True)
+
+print("Bot is ready and running...")
+bot.polling(none_stop=True)
+
