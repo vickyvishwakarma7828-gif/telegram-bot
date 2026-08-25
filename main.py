@@ -16,7 +16,7 @@ user_purchase_history = {}
 support_tickets = {}
 user_ticket_state = {}
 
-# CONFIGURATIONS (Bina '@' ke username taaki link sahi kaam kare)
+# CONFIGURATIONS
 DEFAULT_UPI_ID = "vicky3198737@axl"
 BINANCE_PAY_ID = "123456789"
 BKASH_NUMBER = "01700000000"
@@ -362,34 +362,46 @@ def callback_listener(call):
 
     elif data == "btn_dospin":
         current_time = time.time()
-        cooldown_period = 86400
+        cooldown_period = 86400  # 24 घंटे
 
+        # 24 घंटे का कूलडाउन चेक
         if user_id in user_last_spin:
             elapsed_time = current_time - user_last_spin[user_id]
             if elapsed_time < cooldown_period:
-                bot.answer_callback_query(call.id, "⏳ Cooldown Active!\nYou already played today. Come back tomorrow.", show_alert=True)
+                bot.delete_message(chat_id=chat_id, message_id=message_id)
+
+                cooldown_text = (
+                    "❌ *Cooldown Active!*\n"
+                    "You already played today. Come back tomorrow."
+                )
+
+                back_markup_ludo = InlineKeyboardMarkup()
+                back_markup_ludo.add(InlineKeyboardButton("↩️ BACK", callback_data="btn_ludo"))
+
+                bot.send_message(
+                    chat_id=chat_id,
+                    text=cooldown_text,
+                    parse_mode="Markdown",
+                    reply_markup=back_markup_ludo
+                )
                 return
 
         user_last_spin[user_id] = current_time
 
-        # Pura message delete karke Telegram dice send karein
+        # मैसेज डिलीट करके डाइस रोल करें
         bot.delete_message(chat_id=chat_id, message_id=message_id)
         dice_msg = bot.send_dice(chat_id=chat_id, emoji='🎲')
         dice_value = dice_msg.dice.value
 
-        # Har dice number ka winning reward amount
         rewards = {1: 0.10, 2: 0.20, 3: 0.30, 4: 0.40, 5: 0.50, 6: 1.00}
         won_amount = rewards.get(dice_value, 0.10)
 
-        # Balance update karna
         current_bal = user_balances.get(user_id, 0.24)
         new_balance = current_bal + won_amount
         user_balances[user_id] = new_balance
 
-        # Dice roll animation ke liye 3 second wait
         time.sleep(3)
 
-        # Output Text (Aapke screenshot format ke anusar)
         usd_won = won_amount / 90.0
         usd_total = new_balance / 90.0
 
@@ -541,3 +553,4 @@ def callback_listener(call):
 
 print("Bot fixed and running perfectly...")
 bot.polling(none_stop=True)
+
